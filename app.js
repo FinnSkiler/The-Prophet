@@ -78,4 +78,5 @@ client.on('message', async msg => {
 
 });
 
-client.login(settings.token);
+client.login(settings.token); // Remove when hosting
+// client.login(process.env.TOKEN)
