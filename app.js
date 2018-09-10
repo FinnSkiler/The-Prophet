@@ -23,9 +23,6 @@ require('./util/eventLoader')(client);
 
 const prayed = new Set();
 const alreadyTalked = new Set();
-const rep1 = new Set();
-const rep2 = new Set();
-const finalRep = new Set();
 
 fs.readdir("./commands/", (err, files) => {
 
