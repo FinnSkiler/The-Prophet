@@ -12,8 +12,8 @@ module.exports.run = async (client, msg, args) => {
     value: "An absolutely *useless* command.",
   },
   {
-    name: "!nsfw",
-    value: "Don't ever, ever use this command. And I mean never ever.",
+    name: "!level",
+    value: "Tells you your level.\n ***USAGE:*** Other's lvl \"!level <@user>\"\n Ownlvl \"!level\"",
   }
   // {
   //   name: "",
