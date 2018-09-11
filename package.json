@@ -16,8 +16,10 @@
   "author": "Finn Skiler",
   "license": "MIT",
   "dependencies": {
+    "better-sqlite3": "^4.1.4",
     "discord.js": "^11.4.2",
     "enmap": "^4.1.2",
+    "enmap-sqlite": "^2.0.5",
     "express": "^4.16.3",
     "infinite-loop": "^0.2.2",
     "npm": "^6.4.1",

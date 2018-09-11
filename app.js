@@ -18,9 +18,11 @@ const stuff = require('./stuff.json')
 const fs = require("fs");
 const Enmap = require("enmap");
 const client = new Discord.Client();
+const EnmapLevel = require("enmap-sqlite");
 
 client.commands = new Discord.Collection();
-client.system = new Enmap({name: "system"});
+const systemProv = new EnmapLevel({name: "system"})
+client.system = new Enmap({provider: "systemProv"});
 
 require('./util/eventLoader')(client);
 
@@ -57,6 +59,7 @@ client.on('message', async msg => {
     let args = msgArray.slice(1);
 
     const mUser = `${msg.author.id}`;
+    const aUser = msg.mentions.users.first() || client.users.get(args[0]);
 
   // Enmap Instatiation
   client.system.ensure(mUser, {
@@ -102,7 +105,7 @@ client.on('message', async msg => {
                    alreadyTalked.delete(mUser);
                  }, 300000);
         }  else {
-          msg.channel.send(msg.author + "   " + settings.greets[Math.floor(Math.random() * settings.greets.length)]);
+          msg.channel.send(msg.author + "   " + stuff.response[Math.floor(Math.random() * stuff.response.length)]);
           client.system.dec(mUser, "points");
           prayed.add(mUser);
             setTimeout(() => {
@@ -110,26 +113,67 @@ client.on('message', async msg => {
           }, 3600000); }
     }
 
-    // Level calculation nad message
-    const curLevel = Math.floor(0.5 * Math.sqrt(client.points.get(mUser, "points")));
-    if (client.points.get(mUser, "level") < curLevel) {
-   message.reply(`You've leveled up to level **${curLevel}**! Blessed By Tenshi Sama`);
-   client.points.set(mUser, curLevel, "level");
- } else if (client.points.get(mUser, "level") > curLevel) {
-      message.reply(`You've leveled up to level (+)**${curLevel}**! Ain't that dandy?`);
-      client.points.set(mUser, curLevel, "level");
-    }
-
-  // Remove later **Temp**
-  if (cmd === `${prefix}points`) {
-    message.channel.send(`You currently have ${client.points.get(mUser, "points")} points, and are level ${client.points.get(mUser, "level")}!`);
+  if (cmd === `${prefix}level`) {
+    if (!aUser) {
+    const mPoints = client.system.get(mUser, "points");  // points count
+    const mLevel = client.system.get(mUser, "level"); // Level count
+    if (mPoints > 0) {msg.reply(`You currently have ${mPoints} points, and are a level ***${mLevel} Holy Warrior***!`);}
+    else if (mPoints < 0) {msg.reply(`You currently have ${mPoints} points, and are a level ***${mLevel} Evil Warrior***!`);}
+    else {msg.reply(`You currently have ${mPoints} points, and are at level ${mLevel}`);}
   }
-  else if (cmd === `${prefix}dec`) {}
-  else if (cmd === `${prefix}inc`) {
-    const pointsToAdd = args[1];
-    client.points.math(mUser, "+", pointsToAdd, "points");
-  }
+    else { if (client.system.get(aUser.id)) {
+    const aPoints = client.system.get(aUser.id, "points"); // points count
+    const aLevel = client.system.get(aUser.id, "level"); // level count
 
+  if (aPoints > 0) {msg.channel.send(`${aUser.username} currently has ${aPoints} points, and is a level ***${aLevel} Holy Warrior***!`);}
+    else if (aPoints < 0) {msg.channel.send(`${aUser.username} currently has ${aPoints} points, and is a level ***${aLevel} Evil Warrior***!`);}
+    else {msg.channel.send(`${aUser.username} currently has ${aPoints} points, and is at level ${aLevel}`);}}else msg.reply("This user does not have any level or points");}
+  }
+  else if (cmd === `${prefix}giveXP`) {
+  if (mUser === "466199311487860737" || mUser === "251110656865075200") {
+    const pointsToAdd = parseInt(args[1]);
+    if (!pointsToAdd > 0 || !pointsToAdd < 0) { return msg.reply(`Please mention an appropriate value to add, ${pointsToAdd} is not a value.\n***USAGE:*** \"!give <@user> <points>\"`);}
+    if (!aUser) { return msg.reply(`Please mention a user, ${aUser} is not a user.\n***USAGE:*** \"!give <@user> <points>\"`);}
+
+    // Initiate if not
+    client.system.ensure(aUser.id, {
+      user: aUser.id,
+      points: 0,
+      level: 0,
+      lastSeen: new Date()
+    });
+
+    msg.reply(`Given ${pointsToAdd} points to ${aUser.username}`);
+    client.system.math(aUser.id, "+", pointsToAdd, "points");
+    // level update
+    const bPoints = Math.abs(client.system.get(aUser.id, "points")); // Positify and get new points
+    const newLevel = Math.floor(0.3 * Math.sqrt(bPoints)); // level update
+    client.system.set(aUser.id, newLevel, "level");
+    msg.reply(`${aUser.username}\'s level is now ${newLevel}`);
+  } else msg.reply("You don't have the authority to do so");
+}
+
+    // ENSURE LAST METHOD
+// Level calculation and message and stuff
+    const mPoints = client.system.get(mUser, "points"); // Points count
+    const oldLevel = client.system.get(mUser, "level"); // Level count
+    const posPoints = Math.abs(mPoints); // Positify value
+    const curLevel = Math.floor(0.3 * Math.sqrt(posPoints)); // level up?
+
+if (oldLevel < curLevel) {
+  if (oldLevel !== 0 && curLevel === 0) {msg.reply("You are now neutral.")}
+  else if (mPoints > 0) { msg.reply(`You've leveled up to a level **${curLevel}** ***Holy Warrior***! Tenshi-sama gives you her blessings.`);}
+  else if (mPoints < 0) {  msg.reply(`You've leveled up to a level **${curLevel}** ***Evil Warrior***! Demon-sama gives you his blessings.`);}
+  client.system.set(mUser, curLevel, "level");
+}
+else if (oldLevel > curLevel) {
+  if (oldLevel !== 0 && curLevel === 0) {msg.reply("You are now neutral.")}
+  else if (mPoints > 0) {  msg.reply(`You've leveled down to a level **${curLevel}** ***Holy Warrior***! Tenshi-sama senses you betrayal.`);}
+  else if (mPoints < 0) {  msg.reply(`You've leveled down to a level **${curLevel}** ***Evil Warrior***! Diabolos-sama senses you betrayal.`);}
+  client.system.set(mUser, curLevel, "level");
+}
+
+if (cmd === "~~~~") {msg.reply(aUser.id +"  "+ mUser)}
 });
 
 client.login(settings.token); // Remove when hosting
