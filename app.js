@@ -18,11 +18,9 @@ const stuff = require('./stuff.json')
 const fs = require("fs");
 const Enmap = require("enmap");
 const client = new Discord.Client();
-const EnmapLevel = require("enmap-sqlite");
 
 client.commands = new Discord.Collection();
-const systemProv = new EnmapLevel({name: "system"})
-client.system = new Enmap({provider: "systemProv"});
+client.system = new Enmap({name: "system"});
 
 require('./util/eventLoader')(client);
 
