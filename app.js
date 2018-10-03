@@ -9,7 +9,7 @@ const stuff = require('./stuff.json')
 const fs = require("fs");
 const Enmap = require("enmap");
 const client = new Discord.Client();
-const settings = require('./settings.json')
+// const settings = require('./settings.json') //remove
 
 client.commands = new Discord.Collection();
 client.system = new Enmap({name: "system"});
@@ -279,4 +279,4 @@ else if (oldLevel > curLevel) {
 
 });
 
-client.login(settings.token);
+client.login(process.env.token);
