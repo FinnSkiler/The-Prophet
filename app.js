@@ -1,7 +1,7 @@
-// var http = require("http");
-// setInterval(function() {
-//     http.get("http://<your app name>.herokuapp.com");
-// }, 300000);
+var http = require("http");
+setInterval(function() {
+    http.get("http://pure-badlands-87989.herokuapp.com");
+}, 300000);
 
 // START
 const Discord = require('discord.js');
