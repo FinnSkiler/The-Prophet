@@ -1,6 +1,6 @@
 var http = require("http");
 setInterval(function() {
-    http.get("http://pure-badlands-87989.herokuapp.com");
+    http.get("http://tenshi-bot.herokuapp.com");
 }, 300000);
 
 // START
