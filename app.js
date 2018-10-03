@@ -1,29 +1,23 @@
-// const http = require('http');
-// const express = require('express');
-// const app = express();
-// app.get("/", (request, response) => {
-//   console.log(Date.now() + " Ping Received");
-//   response.sendStatus(200);
-// });
-// app.listen(process.env.PORT);
-// setInterval(() => {
-//   http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
-// }, 280000);
-
+// var http = require("http");
+// setInterval(function() {
+//     http.get("http://<your app name>.herokuapp.com");
+// }, 300000);
 
 // START
 const Discord = require('discord.js');
-const settings = require('./settings.json'); //Remove while hosting
 const stuff = require('./stuff.json')
 const fs = require("fs");
 const Enmap = require("enmap");
 const client = new Discord.Client();
+const settings = require('./settings.json')
 
 client.commands = new Discord.Collection();
 client.system = new Enmap({name: "system"});
 client.prayer = new Enmap({name: "prayer"});
 
 require('./util/eventLoader')(client);
+
+const tried = new Set();
 
 fs.readdir("./commands/", (err, files) => {
 
@@ -55,27 +49,37 @@ client.on('message', async msg => {
 
     const mUser = `${msg.author.id}`;
     const aUser = msg.mentions.users.first() || client.users.get(args[0]);
+    const diabolos = msg.guild.roles.get("488567927788929048");
+    const shadow = msg.guild.roles.get("488743653674844172");
+    const safe = msg.guild.roles.get("494507345011802123");
 
-  // Points Enmap Instatiation
+  // Enmap Instatiation
   client.system.ensure(mUser, {
     user: msg.author.id,
     points: 0,
+    posPoints: 0,
     level: 0,
     lastSeen: new Date()
   });
+
+  const positiveP = Math.abs(client.system.get(mUser, "points"));  //PosPoints for leaderboard
+  client.system.set(mUser, positiveP, "posPoints");
 
   // Prayer instantiation
   client.prayer.ensure(mUser, {
     user: msg.author.id,
     prayedTime: 0,
-    prayed: 0
+    prayer: 0,
+    safe: 0
   });
 
-  const prayerTimeout = 15000;
+  if (client.prayer.get(mUser, "prayedTime") === 0) {client.prayer.set(mUser, 0, "prayer");}
+  const prayerTimeout = 3600000;
   const now = new Date().getTime();
   const timeLeft = Math.floor(prayerTimeout - (now - client.prayer.get(mUser, "prayedTime")));
-  if (timeLeft <= 0) {client.prayer.set(mUser, 0, "prayed");} // hour = 3600000
-  const prayed = client.prayer.get(mUser, "prayed");
+  if (timeLeft <= 0) {client.prayer.set(mUser, 0, "prayer");} // hour = 3600000
+  if (!timeLeft || !client.prayer.get(mUser, "prayedTime")) {client.prayer.set(mUser, 0, "prayer");}
+  const prayed = client.prayer.get(mUser, "prayer");
 
   // Commands
    if (msg.content.startsWith(prefix)){
@@ -85,9 +89,10 @@ client.on('message', async msg => {
 
    else if (cmd === `level`) {
       if (!aUser) {
-      const mPoints = client.system.get(mUser, "points");  // points count
+      const mPoints = client.system.get(mUser, "posPoints");  // points count
       const mLevel = client.system.get(mUser, "level"); // Level count
-      if (mPoints > 0) {msg.reply(`You currently have ${mPoints} points, and are a level ***${mLevel} Holy Warrior***!`);}
+      if (mPoints >= 100) {msg.reply(`You currently have ${mPoints} points, and are a level ***${mLevel} Holy Warrior***!\n Also you have maxed out your level for the beta! ***CONGRATULATIONS***`);}
+      else if (mPoints > 0) {msg.reply(`You currently have ${mPoints} points, and are a level ***${mLevel} Holy Warrior***!`);}
       else if (mPoints < 0) {msg.reply(`You currently have ${mPoints} points, and are a level ***${mLevel} Evil Warrior***!`);}
       else {msg.reply(`You currently have ${mPoints} points, and are at level ${mLevel}`);}
     }
@@ -114,7 +119,7 @@ client.on('message', async msg => {
       });
 
       msg.reply(`Given ${pointsToAdd} points to ${aUser.username}`);
-      client.system.math(aUser.id, "+", pointsToAdd, "points");
+      client.system.Math(aUser.id, "+", pointsToAdd, "points");
 
       // level update
       const bPoints = Math.abs(client.system.get(aUser.id, "points")); // Positify and get new points
@@ -128,8 +133,8 @@ client.on('message', async msg => {
  const sort = filter.sort((a, b) => {
    if (a.level > b.level) return -1;
    if (a.level < b.level) return 1;
-   if (a.points > b.points) return -1;
-   if (a.points < b.points) return 1;
+   if (a.posPoints > b.posPoints) return -1;
+   if (a.posPoints < b.posPoints) return 1;
  });
  const top10 = sort.splice(0, 10);
    const embed = new Discord.RichEmbed()
@@ -140,28 +145,87 @@ client.on('message', async msg => {
       embed.addField(client.users.get(data.user).tag, `Level ${data.level} (${data.points} points)`);
     }
     return msg.channel.send({embed});}
+  else if (cmd === `reset`) {
+    if (mUser === "466199311487860737" || mUser === "251110656865075200") {
+      if (!args[0]) return msg.reply("Error");
+      else { client.prayer.set(aUser.id, 0, "prayer");
+            msg.reply("Done");
+    }}}
+  else if (cmd === "saveme") {
+    if (msg.member.roles.has(safe.id)) {
+      const safeLeft = Math.floor(604800000 - (now - client.prayer.get(mUser, "safe")));
+      const safeSecE = Math.floor(safeLeft / 1000);
+      const safeDay = Math.floor(safeSecE / 86400);
+      const safeEstHour = (safeSecE % 86400);
+      const safeHour = Math.floor(safeEstHour / 3600);
+      const safeEstMin = (safeSecE % 3600);
+      const safeMin = Math.floor(safeEstMin / 60);
+      const safeEstSec = (safeEstMin % 60);
+      const safeSec = Math.ceil(safeEstSec);
+
+      if (safeLeft <= 0) {
+        msg.member.removeRole(safe).catch(console.error);
+        client.prayer.set(mUser, 0, "safe");
+        msg.reply("Successfully removed from Safe Bubble!");
+      }
+      else { msg.reply(`You need to wait a week before undoing this command.\nTime left is ***${safeDay} day(s), ${safeHour} hour(s), ${safeMin} Minute(s) and ${safeSec} second(s)***`);}
+    }
+    else {
+      msg.member.addRole(safe).catch(console.error);
+      client.prayer.set(mUser, now, "safe");
+      msg.reply("You are now in the Safe Bubble, NSFW begone!");
+    }
+  }
+  else if (cmd === "cleanup") {
+    const toRemove = client.system.filter(data => {
+      return now - 2592000000 > data.lastSeen;
+    });
+
+    toRemove.forEach(data => {
+      client.system.delete(`${data.user}`);
+    });
+
+    const alsoRemoving = client.system.filter(data => {
+      return data.points === 0;
+    });
+
+    alsoRemoving.forEach(data => {
+      client.system.delete(`${data.user}`);
+    });
+
+    msg.channel.send(`I've cleaned up ${toRemove.size} old farts and ${alsoRemoving.size} noobs`);
+
+  }
   }
 
 else if(!msg.content.startsWith(prefix)) {
 
   // PRAYING To Tenshi-sama
   if (msg.content === '🙏') {
-    if (!msg.guild) return;
-    if (prayed === 0) {
-      msg.channel.send(msg.author + "   " + stuff.response[Math.floor(Math.random() * stuff.response.length)]);
-      client.system.inc(mUser, "points");
-      client.prayer.inc(mUser, "prayed");
-      const prayedTime = new Date().getTime();
-      client.prayer.set(mUser, prayedTime, "prayedTime");
-    } else if (prayed !== 0) {
-          msg.reply("You can only pray once per hour online.\nTenshi-Sama will accept you prayers, even if you don't display it. :blush: ");
-            if (timeLeft > 60000) {msg.channel.send(`Time left till your next prayer is ${Math.round(timeLeft / 60000)} minutes`);}
-            else if (timeLeft < 60000) {msg.channel.send(`Time left till your next prayer is ${Math.round(timeLeft / 1000)} seconds`);}
+    if (msg.channel.id !== "484743878763610122") {
+      if (prayed === 0) {
+        msg.channel.send(msg.author + "   " + stuff.response[Math.floor(Math.random() * stuff.response.length)]);
+        if (client.system.get(mUser, "posPoints") >= 100) {
+        client.prayer.inc(mUser, "prayer");
+        const prayedTime = new Date().getTime();
+        client.prayer.set(mUser, prayedTime, "prayedTime");
+        }
+        else {
+        client.system.inc(mUser, "points");
+        client.prayer.inc(mUser, "prayer");
+        const prayedTime = new Date().getTime();
+        client.prayer.set(mUser, prayedTime, "prayedTime");
+        }
+      } else if (prayed !== 0) {
+            msg.reply("You can only pray once per hour online.\nTenshi-Sama will accept you prayers, even if you don't display it. :blush: ");
+              if (timeLeft > 60000) {msg.channel.send(`Time left till your next prayer is ${Math.round(timeLeft / 60000)} minutes`);}
+              else if (timeLeft < 60000) {msg.channel.send(`Time left till your next prayer is ${Math.round(timeLeft / 1000)} seconds`);}
 
 
+        }
       }
+      else {msg.reply ("You can only pray in #church-doctrine \n Kindly Comply")}
   }
-
     // PRAYING To Diabolos
     else if (msg.content === '👿' || msg.content === '😈') {
       if (!msg.guild) return;
@@ -182,9 +246,11 @@ else if(!msg.content.startsWith(prefix)) {
       //         prayed.delete(mUser);
       //     }, 3600000); }
     }
+   else if (msg.content === '🖕') {msg.reply("No swearing please.\n Also, same to you");}
   }
 
-  // ENSURE LAST METHODS
+
+    // ENSURE LAST METHOD
 // Level calculation and message and stuff
     const mPoints = client.system.get(mUser, "points"); // Points count
     const oldLevel = client.system.get(mUser, "level"); // Level count
@@ -193,9 +259,16 @@ else if(!msg.content.startsWith(prefix)) {
 
 if (oldLevel < curLevel) {
   if (oldLevel !== 0 && curLevel === 0) {msg.reply("You are now neutral.")}
-  else if (mPoints > 0) { msg.reply(`You've leveled up to a level **${curLevel}** ***Holy Warrior***! Tenshi-sama gives you her blessings.`);}
+  else if (mPoints > 0) { msg.reply(`You've leveled up to a level **${curLevel}** ***Holy Warrior***! Tenshi-sama gives you her blessings.\n***NOTE:*** This is beta version. When the official version is released all points will be reset`);}
   else if (mPoints < 0) {  msg.reply(`You've leveled up to a level **${curLevel}** ***Evil Warrior***! Demon-sama gives you his blessings.`);}
   client.system.set(mUser, curLevel, "level");
+
+  if (client.system.get(mUser, "level") === 2) {
+  if (mPoints > 0) {
+    msg.reply("***Congratulation!!***\nYou now serve the ***Shadow Garden***!");
+    msg.member.addRole(shadow).catch(console.error);
+  }
+}
 }
 else if (oldLevel > curLevel) {
   if (oldLevel !== 0 && curLevel === 0) {msg.reply("You are now neutral.")}
@@ -206,5 +279,4 @@ else if (oldLevel > curLevel) {
 
 });
 
-client.login(settings.token); // Remove when hosting
-// client.login(process.env.TOKEN)
+client.login(settings.token);

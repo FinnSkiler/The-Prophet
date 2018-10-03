@@ -8,16 +8,16 @@ module.exports.run = async (client, msg, args) => {
     value: "Pray to Tenshi-sama once every hour and get a chance to win an ***OP Blessing***!",
   },
   {
-    name: "!wakanda",
-    value: "An absolutely *useless* command.",
+    name: "👿 ***or*** 😈",
+    value: "New feature coming soon.\nCan you guess what it is? Check out !guess",
   },
   {
     name: "!level",
     value: "Tells you your level.\n ***USAGE:*** Check other's lvl - \"!level <@user>\"\nCheck own lvl - \"!level\"",
   },
   {
-    name: "👿 or 😈",
-    value: "New feature coming soon.\nCan you guess what it is? Check out !guess",
+    name: "!SaveMe ***or*** !saveme [Caps don't matter]",
+    value: "Removes NSFW channel from your server or undoes it. Cooldown - 1 week",
   },
   {
     name: "!guess",
@@ -29,7 +29,7 @@ module.exports.run = async (client, msg, args) => {
   }
   // {
   //   name: "",
-  //   value: " ",
+  //   value: "",
   // }
   ]}
 });
