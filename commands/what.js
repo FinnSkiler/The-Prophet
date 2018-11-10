@@ -9,23 +9,19 @@ module.exports.run = async (client, msg, args) => {
   },
   {
     name: "👿 ***or*** 😈",
-    value: "New feature coming soon.\nCan you guess what it is? Check out !guess",
+    value: "Pray to Diabolos-sama once every hour and get a chance to win an ***OP CURSE***!",
   },
   {
     name: "!level",
-    value: "Tells you your level.\n ***USAGE:*** Check other's lvl - \"!level <@user>\"\nCheck own lvl - \"!level\"",
+    value: "Tells you your level (***Currently Disabled***).\n ***USAGE:*** Check other's lvl - \"!level <@user>\"\nCheck own lvl - \"!level\"",
   },
   {
     name: "!SaveMe ***or*** !saveme [Caps don't matter]",
     value: "Removes NSFW channel from your server or undoes it. Cooldown - 1 week",
   },
   {
-    name: "!guess",
-    value: "Guess the new feature(👿 or 😈) and win 30 points!\n***Usage*** : \"!guess <your guess>\"\nReplace <your guess> with you guess and check if its correct.\n***HINT***: The answer is 3 words long. Also may be related to my profile pic.",
-  },
-  {
     name: "!leaderboard or !lb",
-    value: "Shows the leaderboard for highest to lowest points and levels",
+    value: "Shows the leaderboard for highest to lowest points and levels.\n***Currently Disabled***",
   }
   // {
   //   name: "",
