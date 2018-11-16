@@ -12,6 +12,10 @@ module.exports.run = async (client, msg, args) => {
     value: "Pray to Diabolos-sama once every hour and get a chance to win an ***OP CURSE***!",
   },
   {
+    name: "!shadow",
+    value: "Pings you whenever a new shadow chapter is released.",
+  },
+  {
     name: "!level",
     value: "Tells you your level (***Currently Disabled***).\n ***USAGE:*** Check other's lvl - \"!level <@user>\"\nCheck own lvl - \"!level\"",
   },

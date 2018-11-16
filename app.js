@@ -160,6 +160,17 @@ client.on('message', async msg => {
     //   msg.reply("You are now in the Safe Bubble, NSFW begone!");
     // }
   }
+  else if (cmd === "shadow") {
+    const shadowNotify = msg.guild.roles.get("488567927788929048");
+    if (msg.member.roles.has(shadowNotify.id)) {
+      msg.member.removeRole(shadowNotify).catch(console.error);
+      msg.reply("Shadow feels lonely.");
+    }
+    else {
+      msg.member.addRole(shadowNotify).catch(console.error);
+      msg.reply("You will now be notified when a new shadowo chapter is released.")
+    }
+  }
   }
 
 else if(!msg.content.startsWith(prefix)) {
@@ -176,17 +187,6 @@ else if(!msg.content.startsWith(prefix)) {
         setTimeout(() => {
     talked.delete(mUser);
   }, prayerTimeout);
-        // if (client.system.get(mUser, "posPoints") >= 100) {
-        // client.prayer.inc(mUser, "prayer");
-        // const prayedTime = new Date().getTime();
-        // client.prayer.set(mUser, prayedTime, "prayedTime");
-        // }
-        // else {
-        // client.system.inc(mUser, "points");
-        // client.prayer.inc(mUser, "prayer");
-        // const prayedTime = new Date().getTime();
-        // client.prayer.set(mUser, prayedTime, "prayedTime");
-        // }
         }
       }
 
@@ -203,21 +203,6 @@ else if(!msg.content.startsWith(prefix)) {
           setTimeout(() => {
       talked.delete(mUser);
     }, prayerTimeout);
-      // if (alreadyTalked.has(mUser)) {
-      //   msg.channel.send(msg.author + "   You actually dare to make me repeat my words twice!!\nYou can only pray to Demon Lord Diabolos once per hour.\nDon't you understand such a simple statement!?");
-      // } else if (prayed.has(mUser)) {
-      //           msg.channel.send(msg.author + "   You can only pray once per hour.\nDiabolos-sama isn't so free as to respond to each of your prayers.");
-      //           alreadyTalked.add(mUser);
-      //            setTimeout(() => {
-      //              alreadyTalked.delete(mUser);
-      //            }, 300000);
-      //   }  else {
-      //     msg.channel.send(msg.author + "   " + stuff.response[Math.floor(Math.random() * stuff.response.length)]);
-      //     client.system.dec(mUser, "points");
-      //     prayed.add(mUser);
-      //       setTimeout(() => {
-      //         prayed.delete(mUser);
-      //     }, 3600000); }
     }}
    else if (msg.content === '🖕') {msg.reply("No swearing please.\n Also, same to you");}
   }
