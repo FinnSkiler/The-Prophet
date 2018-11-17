@@ -1,7 +1,7 @@
 module.exports.run = async (client, msg, args) => {
   const link = args.shift()
   if ((msg.author.id === '466199311487860737' || msg.author.id === '241780778147512321')) {
-    if (args[0]) {
+    if (link) {
       msg.channel.send("<@&488567927788929048>, New Shadow chapter released.\nCheck it out now --> " + link + "\n" + args.join(" "));
       msg.delete().catch(O_o=>{});
     }
