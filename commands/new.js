@@ -6,7 +6,7 @@ module.exports.run = async (client, msg, args) => {
       msg.delete().catch(O_o=>{});
     }
     else {
-      msg.reply("Wrong Usage,\n***USAGE:***  !new <Link to chapter> [comments]\nExample: \"!new https://www.example.com/ this is an example site.\"");
+      msg.reply("Wrong Usage,\n***USAGE:***  !new <Link to chapter> [comments]\n***Example:*** \"!new https://www.example.com/ this is an example site.\"");
     }
   }
 
